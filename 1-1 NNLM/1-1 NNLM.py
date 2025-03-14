@@ -33,6 +33,12 @@ class NNLM(nn.Module): # 神经网络语言模型
         output = self.b + self.W(x) + self.U(tanh) # (batch_size, n_class)
         return output
 
+def cal_model_num(model):
+
+    model_num = sum(p.numel() for p in model.parameters())
+    print(f'模型参数量为:{model_num}')
+
+
 if __name__ == '__main__':
     n_step = 2 # number of steps, n-1 in paper, sequence length 每句的长度
     n_hidden = 2 # number of hidden size, h in paper, 隐藏层的维度大小
@@ -47,6 +53,8 @@ if __name__ == '__main__':
     n_class = len(word_dict) # number of vocabulary 词表的类别数目
 
     model = NNLM()
+    cal_model_num(model)
+
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.AdamW(model.parameters(),lr = 0.001)
 
