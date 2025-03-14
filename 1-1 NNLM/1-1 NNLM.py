@@ -16,7 +16,7 @@ def make_batch():
 
     return input_batch,target_batch
 
-class NNLM(nn.Module):
+class NNLM(nn.Module): # 神经网络语言模型
     def __init__(self):
         super().__init__()
         self.C = nn.Embedding(n_class, m)
