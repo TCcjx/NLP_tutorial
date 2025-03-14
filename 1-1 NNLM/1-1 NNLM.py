@@ -8,9 +8,12 @@ def make_batch():
 
     for sentence in sentences:
         word = sentence.split()
-        input = [word_dict[n] for n in word[:-1]] # create (1~n-1) as input
-        target = word_dict[word[-1]] # create (n) as target,usually call this 'casual language model'
-
+        if len(word) < max_len:  # 小于max_len做'<P>'填充
+            input = [word_dict[n] for n in word[:-1]] + [0 for _ in range(max_len - len(word))] # create (1~n-1) as input
+            target = word_dict[word[-1]] # create (n) as target,usually call this 'casual language model'
+        else: # 如果序列长度大于 max_len 则做字符截断处理
+            input = [word_dict[n] for n in word[:-1]]
+            target = word_dict[word[-1]]
         input_batch.append(input)
         target_batch.append(target)
 
@@ -39,18 +42,27 @@ def cal_model_num(model):
     print(f'模型参数量为:{model_num}')
 
 
+
+
 if __name__ == '__main__':
     n_step = 2 # number of steps, n-1 in paper, sequence length 每句的长度
     n_hidden = 2 # number of hidden size, h in paper, 隐藏层的维度大小
     m = 2 # 嵌入的维度大小
 
-    sentences = ['I like dog', ' I love coffee', ' I hate milk',' I love you',' he love cat']
+    sentences = ['I like dog', 'I love coffee very much', 'I hate milk','I love you','he love cat','my pig','neu is good university']
 
-    word_list = ''.join(sentences).split()
+    word_list = ' '.join(sentences).split()
     word_list = list(set(word_list)) # 去除重复的单词
-    word_dict = {w:i for i,w in enumerate(word_list)} # 单词到数字的映射表
-    number_dict = {i:w for i,w in enumerate(word_list)} # 数字到单词的映射表
+    word_dict = {w:i+1 for i,w in enumerate(word_list)} # 单词到数字的映射表
+    word_dict['<P>'] = 0
+    number_dict = {word_dict[key]:key for key in word_dict} # 数字到单词的映射表
     n_class = len(word_dict) # number of vocabulary 词表的类别数目
+
+    max_len = 0
+    for sentence in sentences:
+        if len(sentence.split()) > max_len:
+            max_len = len(sentence.split()) # 语料库中最长的字符串
+    n_step = max_len - 1 # 训练数据 x 作为最大的序列长度
 
     model = NNLM()
     cal_model_num(model)
@@ -59,6 +71,8 @@ if __name__ == '__main__':
     optimizer = optim.AdamW(model.parameters(),lr = 0.001)
 
     input_batch, target_batch = make_batch()
+    print(input_batch)
+    print(target_batch)
     input_batch = torch.LongTensor(input_batch)
     target_batch = torch.LongTensor(target_batch)
 
