@@ -76,7 +76,7 @@ if __name__ == '__main__':
         loss.backward()
         optimizer.step()
 
-    # Test
+    # 测试
     test_text = 'sorry love you'
     tests = np.array([[word_dict[n] for n in test_text.split()]])
     test_batch = torch.LongTensor(tests)
