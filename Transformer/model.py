@@ -1,10 +1,9 @@
 import torch
 from torch import nn
 
-num_hiddens = 256
+num_hiddens = 256 # 隐藏态维度大小
 
-
-class EBD(nn.Module):
+class EBD(nn.Module): # 返回字符串id对应嵌入编码信息(包含位置编码)
     def __init__(self, *args, **kwargs) -> None:
         super(EBD, self).__init__(*args, **kwargs)
         self.word_ebd = nn.Embedding(29, num_hiddens)
@@ -16,16 +15,16 @@ class EBD(nn.Module):
         return self.word_ebd(X) + self.pos_ebd(self.pos_t[:, :X.shape[-1]].to(X.device))
 
 
-def attention(Q: torch.Tensor, K: torch.Tensor, V: torch.Tensor, M: torch.Tensor):
+def attention(Q: torch.Tensor, K: torch.Tensor, V: torch.Tensor, M: torch.Tensor): # 计算注意力分数，输出注意力结果
     A = Q @ K.transpose(-1, -2) / (Q.shape[-1] ** 0.5)
-    M = M.unsqueeze(1)
+    M = M.unsqueeze(1) # 掩码
     A.masked_fill_(M == 0, -torch.tensor(float('inf')))
     A = torch.softmax(A, dim=-1)
     O = A @ V
     return O
 
 
-def transpose_o(O):
+def transpose_o(O): # 转换维度
     O = O.transpose(-2, -3)
     O = O.reshape(O.shape[0], O.shape[1], -1)
     return O
@@ -46,10 +45,10 @@ class Attention_block(nn.Module):
         self.Wo = nn.Linear(num_hiddens, num_hiddens, bias=False)
 
     def forward(self, X, M: torch.Tensor):
-        Q, K, V = self.Wq(X), self.Wk(X), self.Wv(X)
-        Q, K, V = transpose_qkv(Q), transpose_qkv(K), transpose_qkv(V)
+        Q, K, V = self.Wq(X), self.Wk(X), self.Wv(X)  # (2, 12, 256)
+        Q, K, V = transpose_qkv(Q), transpose_qkv(K), transpose_qkv(V) # torch.Size([2, 4, 12, 64]) # (batch_size, head_num, sequence_length, head_size)
         O = attention(Q, K, V, M)
-        O = transpose_o(O)
+        O = transpose_o(O) # (2, 12 ,256)
         O = self.Wo(O)
         return O
 
@@ -67,6 +66,7 @@ class AddNorm(nn.Module):
         return X
 
 
+# FeedforWard模块
 class Pos_FFN(nn.Module):
     def __init__(self, *args, **kwargs) -> None:
         super(Pos_FFN, self).__init__(*args, **kwargs)
@@ -92,7 +92,7 @@ class Encoder_block(nn.Module):
         self.add_norm_2 = AddNorm()
 
     def forward(self, X, I_m):
-        I_m = I_m.unsqueeze(-2)
+        I_m = I_m.unsqueeze(-2) # 输入的掩码 (2,1,12)
         X_1 = self.attention(X, I_m)
         X = self.add_norm_1(X, X_1)
         X_1 = self.FFN(X)
@@ -111,7 +111,7 @@ class Encoder(nn.Module):
         self.encoder_blks.append(Encoder_block())
 
     def forward(self, X, I_m):
-        X = self.ebd(X)
+        X = self.ebd(X) # (2,12,256)
         for encoder_blk in self.encoder_blks:
             X = encoder_blk(X, I_m)
         return X
@@ -147,8 +147,8 @@ class Decoder_blk(nn.Module):
         self.tril_mask = torch.tril(mask_matrix).unsqueeze(0)
 
     def forward(self, X_t, O_m, X_en, I_m):
-        O_m = O_m.unsqueeze(-2)
-        I_m = I_m.unsqueeze(-2)
+        O_m = O_m.unsqueeze(-2) # 目标输出掩码
+        I_m = I_m.unsqueeze(-2) # 源输入掩码
         X_1 = self.attention(X_t, O_m * self.tril_mask[:, :O_m.shape[-1], :O_m.shape[-1]].to(X_t.device))
         X_t = self.add_norm_1(X_t, X_1)
         X_1 = self.cross_attention(X_t, X_en, I_m)
@@ -184,15 +184,16 @@ class Transformer(nn.Module):
         self.decoder = Decoder()
 
     def forward(self, X_s, I_m, X_t, O_m):
-        X_en = self.encoder(X_s, I_m)
-        X = self.decoder(X_t, O_m, X_en, I_m)
+        X_en = self.encoder(X_s, I_m) # output: (2, 12, 256)
+        X = self.decoder(X_t, O_m, X_en, I_m) # output: (2, 12, 29)
         return X
 
 
 if __name__ == "__main__":
-    aaa = torch.ones((2, 12)).long()
-    bbb = torch.ones((2, 4)).long()
-    my_model = Transformer()
-    o = my_model(aaa, bbb)
-
+    # aaa = torch.ones((2, 12)).long()
+    # aaa_m = torch.ones((2, 12)).long()
+    # bbb = torch.ones((2, 12)).long()
+    # bbb_m = torch.ones((2, 12)).long()
+    # my_model = Transformer()
+    # o = my_model(aaa, aaa_m, bbb, bbb_m)
     pass

@@ -35,4 +35,4 @@ def predict(model:Transformer, sentence:str):
 if __name__ == "__main__":
     my_model = Transformer().cuda()
     my_model.load_state_dict(torch.load("model.pth"))
-    print(predict(my_model, "mtfq"))
+    print(predict(my_model, "iujulejzx"))
