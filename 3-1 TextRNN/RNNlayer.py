@@ -18,11 +18,23 @@ out, h_t = rnn1(x, torch.zeros(2, 3, 20))
 print(out.shape) # (10, 3, 40)
 print(h_t.shape) # (2, 3, 20)
 
+print('-' * 20)
+rnn2 = nn.RNN(input_size=100, hidden_size=20, num_layers=1)
+x = torch.randn(10, 3, 100)
+out, h_t = rnn2(x, torch.zeros(1, 3, 20))
+print(out.shape) # (10, 3, 20)
+print(h_t.shape) # (1, 3, 20)
+print('-' * 20)
+
+
+print('-' * 20)
 rnn2 = nn.RNN(input_size=100, hidden_size=20, num_layers=4)
 x = torch.randn(10, 3, 100)
 out, h_t = rnn2(x, torch.zeros(4, 3, 20))
 print(out.shape) # (10, 3, 20)
 print(h_t.shape) # (4, 3, 20)
+print('-' * 20)
+
 
 
 rnn3 = nn.RNN(input_size=100, hidden_size=20, num_layers=4,bidirectional=True)
