@@ -35,7 +35,7 @@ class Seq2Seq(nn.Module):
         _, enc_states = self.enc_cell(enc_input, enc_hidden)
         outputs, _ = self.dec_cell(dec_input, enc_states)
 
-        model = self.fc(outputs)
+        model = self.fc(outputs) # 分类头
         return model
 
 def make_testbatch(input_word): # 准备测试数据
@@ -114,11 +114,13 @@ if __name__ == '__main__':
 
 
         predict = output.max(2, keepdim=True)[1]
+        print(predict.shape)
         decoded = [char_arr[i] for i in predict]
         end = decoded.index('E')
         translated = ''.join(decoded[:end])
 
         return translated.replace('P','')
+        # return translated
 
     print('test')
     print('man ->', translate('man'))
