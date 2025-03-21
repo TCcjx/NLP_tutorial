@@ -21,8 +21,14 @@ def make_batch(): # 准备训练数据
 
     return torch.FloatTensor(np.array(input_batch)), torch.FloatTensor(np.array(output_batch)), torch.LongTensor(np.array(target_batch))
 
-# Model
+# Seq2Seq Model
 class Seq2Seq(nn.Module):
+    '''
+    Seq2Seq Model
+    优点：输入和输出都可以是不定长的序列信息
+    问题：那为什么前面的make_batch()函数又对输入序列进行填充到相同维度了呢？
+    答：因为要批量成一个np矩阵，所以维度大小需要填充到一致，如果过长的话，需要做截断处理
+    '''
     def __init__(self):
         super(Seq2Seq, self).__init__()
         self.enc_cell = nn.RNN(input_size = n_class, hidden_size = n_hidden)
