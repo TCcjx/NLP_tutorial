@@ -9,6 +9,11 @@ from torch.utils.data import Dataset,DataLoader
 
 
 
+
+'''
+任务:实现中文日期 翻译为 英文日期
+eg：25-03-25 -》 25/Mar/2025
+'''
 # 加载数据集
 class DateDataset(Dataset):
     def __init__(self, n):
