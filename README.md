@@ -11,7 +11,7 @@ study by https://github.com/graykode/nlp-tutorial.git
 
 ### 正式完结撒花 
 ### 完结时间:2025年3月28日16:24:21
-### 以后有空的话，会在bilibili将这个系列讲一遍
+### 以后有空的话，会在b站这个系列讲一遍
 
 
 
