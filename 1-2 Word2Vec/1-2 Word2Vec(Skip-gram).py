@@ -17,7 +17,7 @@ def random_batch():
     random_labels = []
     random_index = np.random.choice(range(len(skip_grams)), batch_size, replace=False)
 
-    for i in random_index:
+    for i in random_index: # 用中心词来预测上下文词
         random_inputs.append(np.eye(voc_size)[skip_grams[i][0]])  # target 中心词
         random_labels.append(skip_grams[i][1])  # context word 上下文词
 
@@ -54,12 +54,16 @@ if __name__ == '__main__':
     voc_size = len(word_list) # 词表大小
 
     # Make skip gram of one size window
+    '''
+    CBOW 和 Skip-gram的区别:
+    在数据处理部分，Skip-gram将中心词作为input，上下文词作为预测目标
+    '''
     skip_grams = []
-    for i in range(1, len(word_sequence) - 1):
-        target = word_dict[word_sequence[i]] # 去掉的单词作为target
-        context = [word_dict[word_sequence[i-1]], word_dict[word_sequence[i+1]]] # 上下文词
-        for w in context:
-            skip_grams.append([target, w]) # 将context,target追加到skip_grams
+    for i in range(1, len(word_sequence) - 1): # 使用左右两个词作为上下文，中间词作为预测目标
+        context = word_dict[word_sequence[i]] # 中心词作为预测目标
+        target = [word_dict[word_sequence[i-1]], word_dict[word_sequence[i+1]]] # 上下文词来预测中心词
+        for w in target:
+            skip_grams.append([context, w]) # 将context,target追加到skip_grams
 
     model = Word2Vec()
     criterion = nn.CrossEntropyLoss()
